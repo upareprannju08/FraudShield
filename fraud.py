@@ -34,7 +34,6 @@ df["location"] = le_location.fit_transform(df["location"])
 df["device"] = le_device.fit_transform(df["device"])
 X = df[["amount", "time", "location", "device"]]
 y = df["fraud"]
-
 # -------------------------
 # TRAIN MODEL
 # -------------------------
@@ -51,8 +50,8 @@ time = st.sidebar.slider("Time (hour)", 0, 23, 12)
 location = st.sidebar.selectbox("Location", ["Nagpur", "Mumbai", "Pune"])
 device = st.sidebar.selectbox("Device", ["Mobile", "Laptop"])
 
-location_enc = le.transform([location])[0]
-device_enc = le.transform([device])[0]
+location_enc = le_location.transform([location])[0]
+device_enc = le_device.transform([device])[0]
 
 input_data = np.array([[amount, time, location_enc, device_enc]])
 
