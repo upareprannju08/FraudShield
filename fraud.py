@@ -27,10 +27,11 @@ else:
 # -------------------------
 # DATA PREPROCESSING
 # -------------------------
-le = LabelEncoder()
-df["location"] = le.fit_transform(df["location"])
-df["device"] = le.fit_transform(df["device"])
+le_location = LabelEncoder()
+le_device = LabelEncoder()
 
+df["location"] = le_location.fit_transform(df["location"])
+df["device"] = le_device.fit_transform(df["device"])
 X = df[["amount", "time", "location", "device"]]
 y = df["fraud"]
 
