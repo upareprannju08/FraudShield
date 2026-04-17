@@ -61,28 +61,56 @@ input_data = np.array([[amount, time, location_enc, device_enc]])
 prob = model.predict_proba(input_data)[0][1]
 prediction = model.predict(input_data)[0]
 
-st.subheader("🔍 Prediction Result")
+st.subheader("🔍 Transaction Analysis")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("💰 Amount", f"₹{amount}")
+col2.metric("⏰ Time", f"{time}:00")
+col3.metric("📍 Location", location)
+
+# Risk level
+if prob < 0.3:
+    risk = "🟢 Low Risk"
+elif prob < 0.7:
+    risk = "🟡 Medium Risk"
+else:
+    risk = "🔴 High Risk"
+
+st.markdown(f"### Risk Level: {risk}")
 
 if prediction == 1:
-    st.error(f"⚠️ Fraud Detected! Risk Score: {prob:.2f}")
+    st.error(f"⚠️ Fraud Detected (Confidence: {prob:.2f})")
 else:
-    st.success(f"✅ Safe Transaction. Risk Score: {prob:.2f}")
+    st.success(f"✅ Safe Transaction (Confidence: {prob:.2f})")
+st.subheader("📊 Overview Dashboard")
 
+total = len(df)
+frauds = df["fraud"].sum()
+normal = total - frauds
+avg_amount = int(df["amount"].mean())
+
+c1, c2, c3, c4 = st.columns(4)
+
+c1.metric("Total Transactions", total)
+c2.metric("Fraud Cases", frauds)
+c3.metric("Normal", normal)
+c4.metric("Avg Amount", f"₹{avg_amount}")
 # -------------------------
 # SIMPLE CHARTS (NO PLOTLY)
 # -------------------------
-st.subheader("📊 Data Analysis")
+st.subheader("🧠 Smart Insights")
 
-col1, col2 = st.columns(2)
+high_amount = df[df["amount"] > 3000]["fraud"].mean()
 
-with col1:
-    st.write("### Transaction Amount Distribution")
-    st.bar_chart(df["amount"])
+if high_amount > 0.5:
+    st.warning("⚠️ High-value transactions are more likely fraud")
+else:
+    st.info("💡 High-value transactions are mostly safe")
 
-with col2:
-    st.write("### Fraud Count")
-    fraud_counts = df["fraud"].value_counts()
-    st.bar_chart(fraud_counts)
+peak_time = df.groupby("time")["fraud"].mean().idxmax()
+
+st.write(f"🚨 Most fraud happens around: {peak_time}:00 hours")
 
 # -------------------------
 # MAP SECTION
