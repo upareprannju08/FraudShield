@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import folium
 from streamlit_folium import st_folium
@@ -15,34 +13,6 @@ st.set_page_config(page_title="Fraud Detection AI", layout="wide")
 st.title("💳 AI Fraud Detection System")
 
 # -------------------------
-# SAMPLE DATA GENERATOR
-# -------------------------
-def generate_data():
-    np.random.seed(42)
-    n = 200
-
-    data = {
-        "amount": np.random.randint(100, 5000, n),
-        "time": np.random.randint(0, 24, n),
-        "location": np.random.choice(["Nagpur", "Mumbai", "Pune"], n),
-        "device": np.random.choice(["Mobile", "Laptop"], n),
-        "fraud": np.random.choice([0, 1], n, p=[0.8, 0.2])
-    }
-
-    df = pd.DataFrame(data)
-
-    coords = {
-        "Nagpur": (21.1458, 79.0882),
-        "Mumbai": (19.0760, 72.8777),
-        "Pune": (18.5204, 73.8567)
-    }
-
-    df["lat"] = df["location"].apply(lambda x: coords[x][0])
-    df["lon"] = df["location"].apply(lambda x: coords[x][1])
-
-    return df
-
-# -------------------------
 # LOAD DATA
 # -------------------------
 st.sidebar.header("📂 Upload Data")
@@ -52,7 +22,7 @@ file = st.sidebar.file_uploader("Upload CSV", type=["csv"])
 if file:
     df = pd.read_csv(file)
 else:
-    df = generate_data()
+    df = pd.read_csv("fraud_data.csv")  # default file
 
 # -------------------------
 # DATA PREPROCESSING
@@ -80,7 +50,6 @@ time = st.sidebar.slider("Time (hour)", 0, 23, 12)
 location = st.sidebar.selectbox("Location", ["Nagpur", "Mumbai", "Pune"])
 device = st.sidebar.selectbox("Device", ["Mobile", "Laptop"])
 
-# Encode input
 location_enc = le.transform([location])[0]
 device_enc = le.transform([device])[0]
 
@@ -100,19 +69,20 @@ else:
     st.success(f"✅ Safe Transaction. Risk Score: {prob:.2f}")
 
 # -------------------------
-# GRAPH SECTION
+# SIMPLE CHARTS (NO PLOTLY)
 # -------------------------
 st.subheader("📊 Data Analysis")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    fig1 = px.histogram(df, x="amount", title="Transaction Amount Distribution")
-    st.plotly_chart(fig1, use_container_width=True)
+    st.write("### Transaction Amount Distribution")
+    st.bar_chart(df["amount"])
 
 with col2:
-    fig2 = px.pie(df, names="fraud", title="Fraud vs Normal")
-    st.plotly_chart(fig2, use_container_width=True)
+    st.write("### Fraud Count")
+    fraud_counts = df["fraud"].value_counts()
+    st.bar_chart(fraud_counts)
 
 # -------------------------
 # MAP SECTION
@@ -137,11 +107,10 @@ st_folium(m, width=1000, height=400)
 # TABLE VIEW
 # -------------------------
 st.subheader("📋 Data Table")
-
-st.dataframe(df.head(50))
+st.dataframe(df)
 
 # -------------------------
-# DOWNLOAD REPORT
+# DOWNLOAD
 # -------------------------
 st.subheader("📄 Download Data")
 
